@@ -11,21 +11,22 @@ class Chain
 
   # Проверка на корректность
   def valid?
-    diff_day, diff_month, = @start_date.split('.').map(&:to_i)
+    @diff_day, @diff_month, = @start_date.split('.').map(&:to_i)
     @periods.each do |period|
       if period.match(/D/)
         @start_date == get_daily(period)[0] ? (@start_date = get_daily(period)[1]) : (return false)
-        diff_day, diff_month, = @start_date.split('.').map(&:to_i)
+        @diff_day, @diff_month, = @start_date.split('.').map(&:to_i)
       elsif period.match(/M/)
-        @start_date == get_monthly(period, diff_day)[0] ? (@start_date = get_monthly(period, diff_day)[1]) : (return false)
-        diff_month = @start_date.split('.').map(&:to_i)[1]
+        @start_date == get_monthly(period)[0] ? (@start_date = get_monthly(period)[1]) : (return false)
+        @diff_month = @start_date.split('.').map(&:to_i)[1]
       else
-        @start_date == get_annually(period, diff_month, diff_day)[0] ? (@start_date = get_annually(period, diff_month, diff_day)[1]) : (return false)
+        @start_date == get_annually(period)[0] ? (@start_date = get_annually(period)[1]) : (return false)
       end
     end
     true
   end
 
+  # Добавление периода в цепочку
   def add(new_period)
     last = @periods[-1]
     case new_period
@@ -46,13 +47,14 @@ class Chain
 
   private
 
+  # Вспомогательная функция для добавления
   def check_date_type(period)
     if period.match(/D/)
       get_daily(period)[1].split('.').map(&:to_i)
     elsif period.match(/M/)
-      get_monthly(period, @diff_day)[1].split('.')[1..2].map(&:to_i)
+      get_monthly(period)[1].split('.')[1..2].map(&:to_i)
     else
-      get_annually(period, @diff_month, @diff_day)[1].split('.')[2]
+      get_annually(period)[1].split('.')[2]
     end
   end
 
@@ -67,11 +69,11 @@ class Chain
   end
 
   # Вычисление интервала monthly
-  def get_monthly(monthly, diff_day)
+  def get_monthly(monthly)
     year, month = monthly.gsub(/M/, '.').split('.').map(&:to_i)
-    day = (diff_day - Date.new(year, month, -1).day).positive? ? Date.new(year, month, -1).day : diff_day
+    day = (@diff_day - Date.new(year, month, -1).day).positive? ? Date.new(year, month, -1).day : @diff_day
     date_left = Date.new(year, month, day)
-    right_day =  (diff_day - Date.new(year, month + 1, -1).day).positive? ? Date.new(year, month + 1, -1).day : diff_day
+    right_day =  (@diff_day - Date.new(year, month + 1, -1).day).positive? ? Date.new(year, month + 1, -1).day : @diff_day
     date_right = Date.new(year, month + 1, right_day)
     date_left = date_left.strftime('%d.%m.%Y')
     date_right = date_right.strftime('%d.%m.%Y')
@@ -79,13 +81,13 @@ class Chain
   end
   
   # Вычисление интервала annually
-  def get_annually(annually, diff_month, diff_day)
+  def get_annually(annually)
     year = annually.to_i
-    day = (diff_day - Date.new(year, diff_month, -1).day).positive? ? Date.new(year, diff_month, -1).day : diff_day
-    date_left = Date.new(year, diff_month, day)
+    day = (@diff_day - Date.new(year, @diff_month, -1).day).positive? ? Date.new(year, @diff_month, -1).day : @diff_day
+    date_left = Date.new(year, @diff_month, day)
     date_left = date_left.strftime('%d.%m.%Y')
-    day = (diff_day - Date.new(year + 1, diff_month, -1).day).positive? ? Date.new(year + 1, diff_month, -1).day : diff_day
-    date_right = Date.new(year + 1, diff_month, day).strftime('%d.%m.%Y')
+    right_day = (@diff_day - Date.new(year + 1, @diff_month, -1).day).positive? ? Date.new(year + 1, @diff_month, -1).day : @diff_day
+    date_right = Date.new(year + 1, @diff_month, right_day).strftime('%d.%m.%Y')
     [date_left, date_right]
   end
 end
