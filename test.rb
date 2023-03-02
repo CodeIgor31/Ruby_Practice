@@ -3,7 +3,7 @@
 require_relative 'main'
 
 RSpec.describe Chain do
-  describe 'function' do
+  describe 'valid?' do
     it 'should works' do
       per = Chain.new(%w[1976M6D4 1976M6D5 1976M6D6], '04.06.1976')
       expect(per.valid?).to eq(true)
@@ -82,6 +82,36 @@ RSpec.describe Chain do
     it 'should works' do
       per = Chain.new(%w[2023M1D30 2023M1 2023M2 2023M3D30], '30.01.2023')
       expect(per.valid?).to eq(false)
+    end
+
+    it 'should works' do
+      per = Chain.new(%w[2023M12D31 2024M1 2024], '31.12.2023')
+      expect(per.valid?).to eq(true)
+    end
+  end
+  describe 'add' do
+    it 'should works' do
+      per = Chain.new(%w[2023M12D31 2024M1 2024], '31.12.2023')
+      date_type = 'annually'
+      expect(per.add(date_type)).to eq(%w[2023M12D31 2024M1 2024 2025])
+    end
+
+    it 'should works' do
+      per = Chain.new(%w[2023M1D30 2023M1 2023M2], '30.01.2023')
+      date_type = 'monthly'
+      expect(per.add(date_type)).to eq(%w[2023M1D30 2023M1 2023M2 2023M3])
+    end
+
+    it 'should works' do
+      per = Chain.new(%w[2023M1D30 2023M1 2023M2 2023M3D30], '30.01.2023')
+      date_type = 'daily'
+      expect(per.add(date_type)).to eq(%w[2023M1D30 2023M1 2023M2 2023M3D30 2023M3D31])
+    end
+
+    it 'should works' do
+      per = Chain.new(%w[2023M1D30 2023M1 2023M2 2023M3D31], '30.01.2023')
+      date_type = 'daily'
+      expect(per.add(date_type)).to eq(%w[2023M1D30 2023M1 2023M2 2023M3D31 2023M4D1])
     end
   end
 end
